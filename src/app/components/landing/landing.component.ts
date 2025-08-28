@@ -27,6 +27,9 @@ export class LandingComponent implements OnInit {
 
       // Only show the toggle if NOT in the allowed list
       this.showPrivateToggle = !(ip === '188.219.225.106' || ip === '5.11.36.111');
+      if (ip === '188.219.225.106') {
+        this.usePrivate = true; // Default to private if on the allowed IP
+      }
     } catch (e) {
       console.warn('Could not determine public IP; hiding private toggle by default.', e);
       this.showPrivateToggle = false;
@@ -45,6 +48,7 @@ export class LandingComponent implements OnInit {
   }
 
   shipmentCost(): void {
+    console.log('routing to the shipment costs page with usePrivate:', this.usePrivate); 
     this.router.navigate(
       ['/shipment-costs'],
       { queryParams: { usePrivate: this.usePrivate ? 1 : 0 } }

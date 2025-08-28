@@ -21,6 +21,8 @@ export class ApiService {
     try {
       this.ip = await this.getPublicIP();
 
+      console.log('Detected public IP:', this.ip);
+      
       // Keep your original heuristic (fixed the small typo):
       // If public IP starts with 188 or 5, use private; otherwise use public.
       // (Adjust this logic if your environment changes.)

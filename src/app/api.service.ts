@@ -9,7 +9,7 @@ export class ApiService {
   private ip: string = '';
 
   // Define your two bases here (adjust if needed)
-  private readonly privateBase = 'http://192.168.60.184:8080/orderMngrAX/restcall/';
+  private readonly privateBase = 'http://10.130.231.184:8080/orderMngrAX/restcall/';
   private readonly publicBase  = 'http://188.219.225.106:8070/orderMngrAX/restcall/';
 
   // What initializeBaseUrl() detects as the preferred default when no override is given

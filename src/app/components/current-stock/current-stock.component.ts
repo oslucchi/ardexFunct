@@ -101,6 +101,7 @@ export class CurrentStockComponent implements OnInit {
     try {
       const base = this.apiService.getBaseUrl();
       const fullUrl = base + 'locations/getStockStatus'; // or whatever endpoint you need
+      this.apiUrl = fullUrl;
     
       console.log("API URL:", this.apiUrl);
 

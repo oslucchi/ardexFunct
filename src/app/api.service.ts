@@ -1,42 +1,27 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl: string = '';              // Back-compat: default chosen base (set in initializeBaseUrl)
-  private ip: string = '';
-
   // Define your two bases here (adjust if needed)
   private readonly privateBase = 'http://10.130.231.184:8080/orderMngrAX/restcall/';
   private readonly publicBase  = 'http://188.219.225.106:8070/orderMngrAX/restcall/';
+  private readonly publicHosts = ['188.219.225.106'];
+  private readonly privateHostSuffixes: string[] = [];
+  private baseUrl: string = this.resolveBaseUrlFromBrowserHost();
+  private preferPrivateByDetection = this.isPrivateHost(this.getBrowserHost());
 
-  // What initializeBaseUrl() detects as the preferred default when no override is given
-  private preferPrivateByDetection = false;
-
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
   async initializeBaseUrl(): Promise<void> {
-    try {
-      this.ip = await this.getPublicIP();
+    const host = this.getBrowserHost();
 
-      console.log('Detected public IP:', this.ip);
-      
-      // Keep your original heuristic (fixed the small typo):
-      // If public IP starts with 188 or 5, use private; otherwise use public.
-      // (Adjust this logic if your environment changes.)
-      this.preferPrivateByDetection = !!this.ip && this.ip.startsWith('188');
+    this.preferPrivateByDetection = this.isPrivateHost(host);
+    this.baseUrl = this.preferPrivateByDetection ? this.privateBase : this.publicBase;
 
-      this.baseUrl = this.preferPrivateByDetection ? this.privateBase : this.publicBase;
-    } catch (e) {
-      console.warn('Public IP detection failed; using public base as fallback.', e);
-      this.preferPrivateByDetection = false;
-      this.baseUrl = this.publicBase;
-    }
-
-    console.log('Public IP:', this.ip || '(unknown)');
-    console.log('Default (detected) base URL set to:', this.baseUrl);
+    console.log('Browser host:', host || '(unknown)');
+    console.log('Default base URL set to:', this.baseUrl);
   }
 
   /**
@@ -51,10 +36,35 @@ export class ApiService {
     return this.baseUrl; // detected default
   }
 
-  private getPublicIP(): Promise<string> {
-    return this.http
-      .get<any>('https://api.ipify.org?format=json')
-      .toPromise()
-      .then(res => res?.ip as string);
+  usesPrivateBaseByDefault(): boolean {
+    return this.preferPrivateByDetection;
+  }
+
+  private resolveBaseUrlFromBrowserHost(): string {
+    return this.isPrivateHost(this.getBrowserHost()) ? this.privateBase : this.publicBase;
+  }
+
+  private getBrowserHost(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+
+    return window.location.hostname.toLowerCase();
+  }
+
+  private isPrivateHost(host: string): boolean {
+    if (!host || this.publicHosts.includes(host)) {
+      return false;
+    }
+
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+      this.privateHostSuffixes.some(suffix => host.endsWith(suffix))
+    );
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 
 @Component({
@@ -11,9 +11,6 @@ import { ApiService } from '../../api.service';
 })
 export class ShipmentCostsComponent implements OnInit {
   queryForm: FormGroup;
-
-  // whether to use the private (non-routed) base URL, read from query param
-  private usePrivate = false;
 
   shipmentCostDetails: {
     cost?: number;
@@ -31,7 +28,6 @@ export class ShipmentCostsComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
-    private route: ActivatedRoute,
     private apiService: ApiService
   ) {
     this.queryForm = this.fb.group({
@@ -52,16 +48,9 @@ export class ShipmentCostsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Read query param (?usePrivate=1) once on init
-    const qp = this.route.snapshot.queryParamMap;
-    this.usePrivate = qp.get('usePrivate') === '1';
+    const base = this.apiService.getBaseUrl();
+    this.fullUrl = base + 'orders/evaluateShipmentCosts';
 
-    // Compose base URL choosing private/public via ApiService (we'll adjust ApiService next)
-    const base = this.apiService.getBaseUrl(this.usePrivate as any); // ApiService signature will be updated
-    // Ensure no duplicate slashes
-    this.fullUrl = `${String(base).replace(/\/+$/, '')}/orders/evaluateShipmentCosts`;
-
-    console.log('Use private base:', this.usePrivate);
     console.log('API URL:', this.fullUrl);
   }
 
